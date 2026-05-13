@@ -10,6 +10,7 @@ export class CartRepository extends BaseRepository<Cart> {
         return this.findAll({
             where: { userId },
             include: [Product],
+            order: [["id", "DESC"]],
         });
     }
 
