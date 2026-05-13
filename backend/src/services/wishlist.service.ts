@@ -1,9 +1,14 @@
 import { BaseService } from "./BaseService";
 import { Wishlist } from "../models";
 import { WishlistRepository } from "../repositories/wishlist.repo";
+import { LRUCacheable, InvalidateLRUCache } from "../utils/cache";
+import { wishlistCache } from "../config/lru";
+import { dynamicCacheKeys, staticCacheKeys } from "../types/ENUMS";
 
 export class WishlistService extends BaseService<Wishlist> {
     protected repository: WishlistRepository;
+    private static readonly PREFIX: string = staticCacheKeys.wishlistCacheKey + ":user:";
+    private static readonly LABEL: string = staticCacheKeys.wishlistCacheKey;
 
     constructor() {
         const repo = new WishlistRepository();
@@ -11,11 +16,23 @@ export class WishlistService extends BaseService<Wishlist> {
         this.repository = repo;
     }
 
+    @LRUCacheable({
+        cache: wishlistCache,
+        key: (userId: number) =>
+            dynamicCacheKeys.userIdWishlist(userId),
+        ttl: 1800,
+        label: WishlistService.LABEL,
+    })
     async getUserWishlist(userId: number) {
         return this.repository.findByUser(userId);
     }
 
-    async addToWishlist(userId: number, productId?: string) {
+    @InvalidateLRUCache({
+        cache: wishlistCache,
+        label: WishlistService.LABEL,
+        prefix: WishlistService.PREFIX,
+    })
+    async addToWishlist(userId: number, productId: string) {
         if (!productId) {
             throw new Error("PRODUCT_ID_REQUIRED");
         }
@@ -28,14 +45,15 @@ export class WishlistService extends BaseService<Wishlist> {
         return item;
     }
 
+    @InvalidateLRUCache({
+        cache: wishlistCache,
+        prefix: WishlistService.PREFIX,
+        label: WishlistService.LABEL
+    })
     async removeFromWishlist(userId: number, itemId: number) {
-        const deleted = await this.repository.deleteByUserAndId(
+        return await this.repository.deleteByUserAndId(
             userId,
             itemId
         );
-
-        if (deleted === 0) {
-            throw new Error("NOT_FOUND");
-        }
     }
 }

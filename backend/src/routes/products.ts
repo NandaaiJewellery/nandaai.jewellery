@@ -25,7 +25,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     const product = await productService.getProductById(req.params.id);
 
     if (!product) {
-      res.json(null); // preserving your existing behavior
+      res.json(null);
       return;
     }
 

@@ -11,18 +11,19 @@ export interface ProductAttributes {
 }
 
 export type ProductSortOption =
-    | "price_asc"
-    | "price_desc"
-    | "popularity"
-    | "new_arrivals";
+  | "price_asc"
+  | "price_desc"
+  | "popularity"
+  | "new_arrivals";
 
 export interface ProductCreationAttributes
-  extends Optional<ProductAttributes, "id"> {}
+  extends Optional<ProductAttributes, "id"> { }
 
 export interface ProductCategoryAttributes {
   id: number;
   name: string;
   slug: string;
 }
+
 export interface ProductCategoryCreationAttributes
-  extends Optional<ProductCategoryAttributes, "id"> {}
+  extends Optional<ProductCategoryAttributes, "id"> { }

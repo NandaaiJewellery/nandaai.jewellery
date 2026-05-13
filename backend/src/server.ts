@@ -8,6 +8,7 @@ import cartRoutes from "./routes/cart";
 import wishlistRoutes from "./routes/wishlist";
 import orderRoutes from "./routes/orders";
 import imagesRoute from "./routes/images";
+import dev from "./utils";
 
 export class Server {
     public app: Application;
@@ -42,7 +43,7 @@ export class Server {
 
     public listen(port: number | string) {
         this.app.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
+            if (dev) console.log(`Server is running on port ${port}`);
         });
     }
 }

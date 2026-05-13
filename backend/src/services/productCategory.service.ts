@@ -1,9 +1,13 @@
 import { BaseService } from "./BaseService";
 import { ProductCategory } from "../models/ProductCategory";
 import { ProductCategoryRepository } from "../repositories/productCategory.repository";
+import { staticCacheKeys } from "../types/ENUMS";
+import { RedCacheable, InvalidateRedCache } from "../utils/cache";
 
 export class ProductCategoryService extends BaseService<ProductCategory> {
     protected repository: ProductCategoryRepository;
+    private static readonly PREFIX: string = staticCacheKeys.catalogueCacheKey;
+    private static readonly LABEL: string = staticCacheKeys.catalogueCacheKey;
 
     constructor() {
         const repo = new ProductCategoryRepository();
@@ -11,6 +15,32 @@ export class ProductCategoryService extends BaseService<ProductCategory> {
         this.repository = repo;
     }
 
+    @RedCacheable({
+        prefix: ProductCategoryService.PREFIX,
+        key: () => "all",
+        ttl: 1800, // 30 min
+        label: ProductCategoryService.LABEL
+    })
+    async getAllCategories() {
+        return await this.repository.findAll({
+            order: [["name", "ASC"]],
+        });
+    }
+
+    @RedCacheable({
+        prefix: ProductCategoryService.PREFIX,
+        key: (id: number | string) => `${id}`,
+        ttl: 1800, // 30 min
+        label: ProductCategoryService.LABEL
+    })
+    async getCategoryById(id: number | string) {
+        return this.getById(id) ?? null;
+    }
+
+    @InvalidateRedCache({
+        prefix: ProductCategoryService.PREFIX,
+        label: ProductCategoryService.LABEL
+    })
     async createCategory(name: string, slug: string) {
         if (!name || !slug) {
             throw new Error("name and slug are required");
@@ -24,16 +54,10 @@ export class ProductCategoryService extends BaseService<ProductCategory> {
         return this.repository.create({ name, slug });
     }
 
-    async getAllCategories() {
-        return this.repository.findAll({
-            order: [["created_at", "DESC"]],
-        });
-    }
-
-    async getCategoryById(id: number | string) {
-        return this.getById(id); // uses BaseService (throws NOT_FOUND)
-    }
-
+    @InvalidateRedCache({
+        prefix: ProductCategoryService.PREFIX,
+        label: ProductCategoryService.LABEL
+    })
     async updateCategory(
         id: number | string,
         name?: string,
@@ -56,6 +80,10 @@ export class ProductCategoryService extends BaseService<ProductCategory> {
         });
     }
 
+    @InvalidateRedCache({
+        prefix: ProductCategoryService.PREFIX,
+        label: ProductCategoryService.LABEL
+    })
     async deleteCategory(id: number | string) {
         const deleted = await this.repository.delete({ id } as any);
 

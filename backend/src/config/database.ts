@@ -1,8 +1,12 @@
 import { Sequelize } from "sequelize";
+import dev from "../utils";
 
 export class Database {
   private sequelize: Sequelize;
-  private readonly databaseConnection: string = process.env.DATABASE_URL!;
+  private readonly databaseConnection: string =
+    dev
+      ? process.env.DATABASE_URL_DEV!
+      : process.env.DATABASE_URL_PROD!;
   constructor() {
 
     this.sequelize = new Sequelize(this.databaseConnection, {
@@ -24,7 +28,7 @@ export class Database {
       await this.sequelize.authenticate();
       await this.sequelize.sync({ alter: true });
 
-      console.log("Database connected and synced.");
+      if (dev) console.log(`${process.env.NODE_ENV!} Database connected and synced.`);
     } catch (error) {
       console.error("Database connection failed:", error);
       process.exit(1);

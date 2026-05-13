@@ -3,10 +3,14 @@ import { Order } from "../models";
 import { OrderRepository } from "../repositories/orders.repository";
 import { OrderItemRepository } from "../repositories/orderItems.repository";
 import { sequelize } from "../config/database";
+import { dynamicCacheKeys, staticCacheKeys } from "../types/ENUMS";
+import { RedCacheable, InvalidateRedCache } from "../utils/cache";
 
 export class OrderService extends BaseService<Order> {
     protected repository: OrderRepository;
     private orderItemRepo: OrderItemRepository;
+    private static readonly PREFIX: string = staticCacheKeys.userOrdersCacheKey;
+    private static readonly LABEL: string = staticCacheKeys.userOrdersCacheKey;
 
     constructor() {
         const repo = new OrderRepository();
@@ -15,6 +19,10 @@ export class OrderService extends BaseService<Order> {
         this.orderItemRepo = new OrderItemRepository();
     }
 
+    @InvalidateRedCache({
+        prefix: OrderService.PREFIX,
+        label: OrderService.LABEL
+    })
     async createOrder(userId: number, totalAmount: number, items: any[]) {
         const transaction = await sequelize.transaction();
 
@@ -44,11 +52,17 @@ export class OrderService extends BaseService<Order> {
         }
     }
 
+    @RedCacheable({
+        prefix: OrderService.PREFIX,
+        key: (userId: string) => dynamicCacheKeys.userIdOrders(userId),
+        ttl: 1800, // 30 min
+        label: OrderService.LABEL
+    })
     async getUserOrders(userId: number) {
         return this.repository.findByUser(userId, {
             include: [
                 {
-                    association: "OrderItems", // or model: OrderItem if not aliased
+                    association: "OrderItems",
                     include: ["Product"],
                 },
             ],
