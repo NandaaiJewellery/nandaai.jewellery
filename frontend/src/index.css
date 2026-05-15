@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "DM Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #fafaf9;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: rgba(201, 169, 98, 0.3) !important;
+}
+.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(201, 169, 98, 0.8) !important;
+}
