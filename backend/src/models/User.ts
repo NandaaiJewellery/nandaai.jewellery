@@ -4,7 +4,6 @@ import { UserAttributes, UserCreationAttributes } from "../types/User";
 export class User
   extends Model<UserAttributes, UserCreationAttributes>
   implements UserAttributes {
-  [x: string]: any;
   declare id: number;
   declare name: string;
   declare email: string;

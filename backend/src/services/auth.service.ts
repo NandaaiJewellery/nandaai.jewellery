@@ -50,7 +50,7 @@ export class AuthService extends BaseService<User> {
             throw new Error("Invalid credentials");
         }
 
-        const token = this.generateToken(user.id, user.email, user.role);
+        const token = this.generateToken(user.id, user.email);
 
         return {
             user: this.sanitizeUser(user),
